@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Calculator - Byte This!</title>
+
+    <style>
+        body {
+            font-family: Consolas;
+            font-size: 1.4em;
+            margin: 0;
+            padding: 0;
+            background-color: #060d13;
+            color: white;
+            text-align: center;
+        }
+
+        header {
+            border-bottom: 1px solid black;
+            padding: 10px;
+            background-color: #1f262c;
+        }
+
+        content {
+            display: block;
+            padding: 20px;
+        }
+
+        /* Calculator Styles **/
+        #calc-buttons {
+            display: inline-block;
+        }
+
+        #small-display {
+            height: 40px;
+            font-size: 35px;
+        }
+
+        #main-display {
+            height: 80px;
+            font-size: 60px;
+        }
+
+        button {
+            width: 90px;
+            height: 90px;
+            position: relative;
+            cursor: pointer;
+            margin: 1px;
+
+            font-size: 20px;
+            font-weight: bold;
+
+            outline: 0;
+            box-shadow: 0 0 1em 1ex rgb(0 0 0 / 10%);
+        }
+
+        .button-row {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #calc-button {
+            flex-grow: 1;
+        }
+
+        /** Different types of buttons will look slightly different */
+        .btn-op {
+            background-image: radial-gradient(ellipse 300% 110% at top center,
+                #838a90 0%,
+                #b5bcc2 50%,
+                #838a90 100%
+            );
+        }
+        .btn-op:hover {
+            background-image: radial-gradient(ellipse 300% 110% at top center,
+                #5a5e75 0%,
+                #8c90a7 50%,
+                #5a5e75 100%
+            );
+        }
+        /** number buttons **/
+        .btn-num {
+            background-image: radial-gradient(ellipse 300% 110% at top center,
+                #625c72 0%,
+                #c6c0d6 50%,
+                #625c72 100%
+            );
+        }
+        .btn-num:hover {
+            background-image: radial-gradient(ellipse 300% 110% at top center,
+                #493d60 0%,
+                #c6badd 50%,
+                #493d60 100%
+            );
+        }
+        /** calculate button */
+        .btn-calc {
+            background-image: radial-gradient(ellipse 300% 110% at top center,
+                #68364d 0%,
+                #b38198 50%,
+                #68364d 100%
+            );
+        }
+        .btn-calc:hover {
+            background-image: radial-gradient(ellipse 300% 110% at top center,
+                #ac537a 0%,
+                #ffd0f7 50%,
+                #ac537a 100%
+            );
+        }
+    </style>
+
+    <script>
+        //when the document is loaded, init the calculator
+        window.addEventListener("DOMContentLoaded", () => {
+            new Calculator();
+        });
+
+        class Calculator {
+
+            /**
+             * Initialize the calculator:
+             * : listen to button elements + keyboard
+             * : keep track of button + keyboard clicks
+             * : make calculations when necessary
+             * : show the result & reset
+             */ 
+            constructor() {
+                //we'll store numbers as strings to preserve "0"s
+                this.previousNumber = null;
+                this.currentNumber = "0";
+                this.currentNumberDecimal = null;
+                this.currentCalcOp = null;
+
+                //get display elements
+                this.smallDisplayEl = document.getElementById("small-display");
+                this.mainDisplayEl = document.getElementById("main-display");
+
+                //get button container
+                const calcEl = document.getElementById("calc-buttons");
+
+                //listen to button clicks
+                const buttons = calcEl.querySelectorAll("button");
+                buttons.forEach(button => {
+                    button.addEventListener("click", (event) => {
+                        this.onButtonInvokation(
+                            event.target.dataset.op
+                            || event.target.innerText
+                        );
+                    });
+                });
+
+                //listen to keyboard strokes
+                window.addEventListener("keydown", (event) => {
+                    this.onButtonInvokation(event.key);
+                });
+
+                this.updateDisplay();
+            }
+            
+            /**
+             * When button is clicked, figure out if
+             *  it is a number entry or operation entry
+             */ 
+            onButtonInvokation(val) {
+                const parsed = parseInt(val);
+                if (isNaN(parsed)) {
+                    this.onOperationButtonInvokation(val);
+                } else {
+                    this.onNumericButtonInvokation(parsed);
+                }
+                this.updateDisplay();
+            }
+
+            /**
+             * If number is clicked, update current number
+             */ 
+            onNumericButtonInvokation(val) {
+                if (this.currentNumber === null) {
+                    this.currentNumber = "" + val;
+                } else if (this.currentNumberDecimal === null) {
+                    this.currentNumber += val;
+                } else {
+                    this.currentNumberDecimal += val;
+                }
+                console.log("Current number:", this.currentNumber, this.currentNumberDecimal);
+            }
+
+            /**
+             * Handle the current operation
+             */ 
+            onOperationButtonInvokation(op) {
+                switch (op) {
+                    case "clear":
+                        this.currentNumber = "0";
+                        this.currentNumberDecimal = null;
+                        break;
+                    case "calc":
+                    case "Enter":
+                        this.finishCalc();
+                        break;
+                    case ".":
+                        this.currentNumberDecimal = "";
+                        break;
+                    case "neg":
+                        if (this.currentNumber !== "0") {
+                            this.currentNumber = this.currentNumber.indexOf("-") === 0
+                                ? this.currentNumber.substring(1)
+                                : ("-" + this.currentNumber).replace("-0", "-");
+                        }
+                        break;
+                    default:
+                        this.pushCalc(op);
+                        break;
+                }
+            }
+
+            /**
+             * Perform partial calculation
+             */ 
+            pushCalc(calcOp) {
+                let doFlip = true;
+
+                const addVal = parseFloat(this.currentNumberToUnifiedString());
+                if (this.previousNumber === null) {
+                    this.previousNumber = addVal;
+                } else {
+                    switch (this.currentCalcOp) {
+                        case "+":
+                            this.previousNumber += addVal;
+                            break;
+                        case "-":
+                            this.previousNumber -= addVal;
+                            break;
+                        case "·":
+                        case "*":
+                            this.previousNumber *= addVal;
+                            break;
+                        case "/":
+                        case "÷":
+                            this.previousNumber /= addVal;
+                            break;
+                        //if default reached, unknown input, so skip
+                        default:
+                            doFlip = false;
+                            break;
+                    }
+                }
+
+                if (doFlip) {
+                    this.currentNumber = null;
+                    this.currentNumberDecimal = null;
+                    this.currentCalcOp = calcOp;
+                    console.log("Partial calc: ", this.previousNumber);
+                }
+            }
+
+            /**
+             * Get the current number + decimal part into a single total
+             */ 
+            currentNumberToUnifiedString() {
+                let num = this.currentNumber;
+                if (this.currentNumberDecimal !== null) {
+                    num += "." + this.currentNumberDecimal;
+                }
+                if (num && num.length > 1 && num.charAt(0) === "0") {
+                    num = num.substring(1);
+                }
+                return num;
+            }
+
+            /**
+             * Assign variables differently when the "calculate"
+             *  button is clicked
+             */ 
+            finishCalc() {
+                this.pushCalc(null);
+                //cast back to string
+                this.currentNumber = "" + this.previousNumber;
+                this.previousNumber = null;
+                console.log("Final calc:", this.currentNumber);
+            }
+
+            updateDisplay() {
+                let newSmallText = "";
+                let newMainText = "";
+                if (this.previousNumber) {
+                    newSmallText += `${this.previousNumber}`;
+                    newMainText += `${this.currentCalcOp} `;
+                }
+                if (this.currentNumber) {
+                    newMainText += this.currentNumberToUnifiedString();
+                }
+
+                this.mainDisplayEl.innerText = newMainText;
+                this.smallDisplayEl.innerText = newSmallText;
+            }
+
+        }
+    </script>
+
+</head>
+<body>
+    <header>
+        Web-Dev with Music - Byte This!
+    </header>
+
+    <content>
+        <h1>Simple Calculator</h1>
+        <p>Let's create a calculator similar to the Windows calculator app.</p>
+
+        <hr />
+
+        <!-- Display previous number -->
+        <div id="small-display"></div>
+
+        <!-- Display current number -->
+        <div id="main-display"></div>
+
+        <!-- Calculator Button Rows -->
+        <div id="calc-buttons">
+            <div class="button-row">
+                <button class="btn-num">7</button>
+                <button class="btn-num">8</button>
+                <button class="btn-num">9</button>
+                <button class="btn-op">÷</button>
+            </div>
+            <div class="button-row">
+                <button class="btn-num">4</button>
+                <button class="btn-num">5</button>
+                <button class="btn-num">6</button>
+                <button class="btn-op">·</button>
+            </div>
+            <div class="button-row">
+                <button class="btn-num">1</button>
+                <button class="btn-num">2</button>
+                <button class="btn-num">3</button>
+                <button class="btn-op">-</button>
+            </div>
+            <div class="button-row">
+                <button class="btn-op" data-op="neg">+/-</button>
+                <button class="btn-num">0</button>
+                <button class="btn-op">.</button>
+                <button class="btn-op">+</button>
+            </div>
+            <div class="button-row">
+                <button class="btn-calc" id="calc-button" data-op="calc">Calculate!</button>
+                <button class="btn-op" data-op="clear">Clear</button>
+            </div>
+        </div>
+
+    </content>
+</body>
+</html>
