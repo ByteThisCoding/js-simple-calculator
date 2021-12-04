@@ -1,6 +1,7 @@
 # js-simple-calculator
 This is an example implementation of a calculator app. Feel free to also check out:
 * Our [YouTube Video](https://www.youtube.com/watch?v=aeS2-QYu02k), where we code this in real time with music.
+* Our [Dev Page](https://bytethisstore.com/articles/pg/js-simple-calculator), where we cover this in more detail.
 
 ## Demo the Live Example
 The live example can be viewed in action on [this page](https://htmlpreview.github.io/?https://github.com/ByteThisStore/js-simple-calculator/blob/main/index.html).
