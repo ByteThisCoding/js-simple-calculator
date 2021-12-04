@@ -36,7 +36,7 @@ In terms of calculator logic, we will need to:
     2. Perform operations each time the user enters a number and operation, then carry over the result.
 * Reset the state properly when the user hits *Clear*.
 
-For this example, we will take approach #2 above, where we perform partial operations and carry the result. ........
+For this example, we will take approach #2 above, where we perform partial operations and carry the result as we go.
 
 ## Creating the UI
 The first step we will take is to create the HTML elements which will receive input. We will define multiple rows of buttons, each with 4 buttons, except the bottom row which will only have two. Each button will correspond to a number, an operation, or the command to calculate or clear the input. Above the buttons, we will have two display containers, one to display the current number being entered, and the other to display the previous number.
