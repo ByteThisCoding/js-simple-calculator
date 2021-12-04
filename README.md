@@ -2,6 +2,9 @@
 This is an example implementation of a calculator app. Feel free to also check out:
 * Our [YouTube Video](https://www.youtube.com/watch?v=aeS2-QYu02k), where we code this in real time with music.
 
+## Demo the Live Example
+The live example can be viewed in action on [this page](https://htmlpreview.github.io/?https://github.com/ByteThisStore/js-simple-calculator/blob/main/index.html).
+
 ## Example Requirements
 We're going to create a simple calculator which behaves like the Windows calculator app. Let's explicitly outline the behavioral requirements for our app:
 * Calculator should evaluate in entry order. In other words: *we don't need to wory about PEMDAS*.
